@@ -40,7 +40,7 @@ namespace DistributedProblemSolver
 
             Console.WriteLine("Calculating Secret");
             var stopWatch = Stopwatch.StartNew();
-            var solvedSecretNumber = SolveProblem(secretHash);
+            var solvedSecretNumber = await SolveProblem(secretHash);
             stopWatch.Stop();
             Console.WriteLine($"Your Secret Is: {solvedSecretNumber}");
             Console.WriteLine($"Solved In: {stopWatch.ElapsedMilliseconds}ms");
@@ -55,7 +55,11 @@ namespace DistributedProblemSolver
                 SecretHash = secretHash,
             };
 
-            return (await StaticBus.Get().Request<ISecretProblem, ISecretResult>(request)).Message.Secret.Value;
+            var bus = await StaticBus.Get();
+            var secret = (await bus.Request<ISecretProblem, ISecretResult>(request)).Message.Secret.Value;
+            await StaticBus.StopAsync();
+
+            return secret;
         }
     }
 }

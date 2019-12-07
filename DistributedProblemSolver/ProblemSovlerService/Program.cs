@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using MassTransit;
 using Shared;
 
@@ -8,7 +9,7 @@ namespace ProblemSovlerService
     {
         static IBusControl bus;
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.CancelKeyPress += (s, ev) => {
                 if(bus != null)
@@ -37,6 +38,7 @@ namespace ProblemSovlerService
                     e.Consumer<SecretProblemConsumer>();
                 });
             });
+            await bus.StartAsync();
 
             Console.WriteLine("Hello World!");
             Console.ReadKey();

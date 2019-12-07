@@ -7,7 +7,7 @@ namespace Shared
     {
         static IBusControl bus;
 
-        public static IBus Get()
+        public static async Task<IBus> Get()
         {
             if (bus == null)
             {
@@ -17,11 +17,12 @@ namespace Shared
                     cfg.AutoDelete = true;
                     cfg.Host(BusConfig.Host);
                 });
+                await bus.StartAsync();
             }
             return bus;
         }
 
-        public static async Task Stop()
+        public static async Task StopAsync()
         {
             await bus.StopAsync();
         }
