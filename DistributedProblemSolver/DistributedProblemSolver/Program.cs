@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using DistributedDto;
-using MassTransit;
 using Shared;
 
 namespace DistributedProblemSolver
@@ -39,27 +37,17 @@ namespace DistributedProblemSolver
             }
 
             Console.WriteLine("Calculating Secret");
+
             var stopWatch = Stopwatch.StartNew();
-            var solvedSecretNumber = await SolveProblem(secretHash);
+            var problemSolver = new ProblemSolverOrchestrator();
+            var solvedSecretNumber = await problemSolver.SolveProblem(secretHash);
             stopWatch.Stop();
+
             Console.WriteLine($"Your Secret Is: {solvedSecretNumber}");
             Console.WriteLine($"Solved In: {stopWatch.ElapsedMilliseconds}ms");
+            await StaticBus.StopAsync();
             Console.WriteLine("Press any key to exit");
             Console.ReadKey();
-        }
-
-        static async Task<int> SolveProblem(byte[] secretHash)
-        {
-            var request = new SecretProblem()
-            {
-                SecretHash = secretHash,
-            };
-
-            var bus = await StaticBus.Get();
-            var secret = (await bus.Request<ISecretProblem, ISecretResult>(request)).Message.Secret.Value;
-            await StaticBus.StopAsync();
-
-            return secret;
         }
     }
 }

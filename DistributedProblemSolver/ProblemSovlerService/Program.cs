@@ -12,18 +12,23 @@ namespace ProblemSovlerService
         static async Task Main(string[] args)
         {
             Console.CancelKeyPress += (s, ev) => {
-                if(bus != null)
-                {
-                    Console.WriteLine("Stopping Bus");
-                    bus.Stop();
-                    Console.WriteLine("Bus Stopped");
-                }
+                StopBus();
                 
                 ev.Cancel = true;
                 Environment.Exit(0);
             };
 
-            Console.WriteLine("Connecting Consumer");
+            await AddConsumer(10);
+            await AddConsumer(9);
+
+            Console.WriteLine("Ready to solve problems!");
+            Console.ReadKey();
+            StopBus();
+        }
+
+        static async Task AddConsumer(int priority)
+        {
+            Console.WriteLine($"Connecting Consumer {priority}");
             bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
                 cfg.Durable = false;
@@ -34,15 +39,22 @@ namespace ProblemSovlerService
                     e.Durable = false;
                     e.AutoDelete = true;
                     e.PrefetchCount = 1;
-                    e.ConsumerPriority = 10;
+                    e.ConsumerPriority = priority;
                     e.Consumer<SecretProblemConsumer>();
                 });
             });
             await bus.StartAsync();
-
-            Console.WriteLine("Hello World!");
-            Console.ReadKey();
-
         }
+
+        static void StopBus()
+        {
+            if (bus != null)
+            {
+                Console.WriteLine("Stopping Bus");
+                bus.Stop();
+                Console.WriteLine("Bus Stopped");
+            }
+        }
+
     }
 }

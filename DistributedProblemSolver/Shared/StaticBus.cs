@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using MassTransit;
 
 namespace Shared
@@ -6,18 +7,24 @@ namespace Shared
     public static class StaticBus
     {
         static IBusControl bus;
+        static readonly SemaphoreSlim busLock = new SemaphoreSlim(0, 1);
 
         public static async Task<IBus> Get()
         {
             if (bus == null)
             {
-                bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
+                await busLock.WaitAsync();
+                if (bus == null)
                 {
-                    cfg.Durable = false;
-                    cfg.AutoDelete = true;
-                    cfg.Host(BusConfig.Host);
-                });
-                await bus.StartAsync();
+                    bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
+                    {
+                        cfg.Durable = false;
+                        cfg.AutoDelete = true;
+                        cfg.Host(BusConfig.Host);
+                    });
+                    await bus.StartAsync();
+                }
+                busLock.Release();
             }
             return bus;
         }
