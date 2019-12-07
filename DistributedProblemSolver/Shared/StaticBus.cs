@@ -7,7 +7,7 @@ namespace Shared
     public static class StaticBus
     {
         static IBusControl bus;
-        static readonly SemaphoreSlim busLock = new SemaphoreSlim(0, 1);
+        static readonly SemaphoreSlim busLock = new SemaphoreSlim(1, 1);
 
         public static async Task<IBus> Get()
         {

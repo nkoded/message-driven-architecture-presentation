@@ -10,7 +10,7 @@ namespace DistributedProblemSolver
     {
         const int batchSize = 1000000;
         int index = 0;
-        readonly SemaphoreSlim indexLock = new SemaphoreSlim(0, 1);
+        readonly SemaphoreSlim indexLock = new SemaphoreSlim(1, 1);
 
         public async Task<int> SolveProblem(byte[] secretHash)
         {
